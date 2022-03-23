@@ -3,12 +3,11 @@ import { ethers, artifacts, network } from "hardhat";
 import { Signer, Contract, ContractFactory, Event, BigNumber } from "ethers";
 import { StakingContract, StakingContract__factory, ERC20Mock, ERC20Mock__factory } from '../typechain-types';
 
-//todo arefev: make typesafe
 describe("StakingContract", function () {
-    const initialSupply = 1_000_000_000_000
-    const rewardPercentage = 20;
-    const rewardingPeriod = 10;
-    const stakeWithdrawalTimeout = 10;
+    const initialSupply: number = 1_000_000_000_000
+    const rewardPercentage: number = 20;
+    const rewardingPeriod: number = 10;
+    const stakeWithdrawalTimeout: number = 10;
 
     let bob: Signer;
     let alice: Signer;
@@ -44,19 +43,19 @@ describe("StakingContract", function () {
     }
 
     it("Should change total stake after staking", async () => {
-        const tokensAtStake = 100;
+        const tokensToStake: number = 100;
         const totalStakeBefore: BigNumber = await stakingContract.totalStake();
         const aliceAddress: string = await alice.getAddress();
-        await stakingToken.approve(stakingContract.address, tokensAtStake);
-        await stakingContract.stake(tokensAtStake);
+        await stakingToken.approve(stakingContract.address, tokensToStake);
+        await stakingContract.stake(tokensToStake);
 
         const totalStakeAfter: BigNumber = await stakingContract.totalStake();
 
-        expect(tokensAtStake).to.equal(totalStakeAfter.toNumber() - totalStakeBefore.toNumber());
+        expect(tokensToStake).to.equal(totalStakeAfter.toNumber() - totalStakeBefore.toNumber());
     })
 
     it("Should not allow to unstake before the timeout has expired", async () => {
-        const tokensToStake = 100;
+        const tokensToStake: number = 100;
         const aliceAddress: string = await alice.getAddress();
         await stakingToken.approve(stakingContract.address, tokensToStake);
         await stakingContract.stake(tokensToStake);
@@ -68,10 +67,10 @@ describe("StakingContract", function () {
     })
 
     it("Should allow to unstake after the timeout has expired", async () => {
-        const tokensAtStake = 100;
+        const tokensToStake: number = 100;
         const aliceAddress: string = await alice.getAddress();
-        await stakingToken.approve(stakingContract.address, tokensAtStake);
-        await stakingContract.stake(tokensAtStake);
+        await stakingToken.approve(stakingContract.address, tokensToStake);
+        await stakingContract.stake(tokensToStake);
 
         await network.provider.send("evm_increaseTime", [stakeWithdrawalTimeout])
 
@@ -79,7 +78,7 @@ describe("StakingContract", function () {
         await stakingContract.unstake();
         const aliceBalanceAfterUnstaking: BigNumber = await stakingToken.balanceOf(aliceAddress);
 
-        expect(tokensAtStake).to.equal(aliceBalanceAfterUnstaking.toNumber() - aliceBalanceBeforeUnstaking.toNumber());
+        expect(tokensToStake).to.equal(aliceBalanceAfterUnstaking.toNumber() - aliceBalanceBeforeUnstaking.toNumber());
     })
 
     it("Should not allow to unstake if nothing at stake", async () => {
@@ -97,7 +96,8 @@ describe("StakingContract", function () {
     })
 
      it("Should not allow for non-owner to change the rewardPercentage", async () => {
-         const aNewRewardPercentage = 50;
+         const aNewRewardPercentage: number = 50;
+
          const setRewardPercentageTxPromise: Promise<any> =
             stakingContract.connect(bob).setRewardPercentage(aNewRewardPercentage);
 
@@ -106,7 +106,8 @@ describe("StakingContract", function () {
      })
 
     it("Should not allow for non-owner to change the rewardRate", async () => {
-        const aNewRewardRate = 50;
+        const aNewRewardRate: number = 50;
+
         const setRewardRateTxPromise: Promise<any> = stakingContract.connect(bob).setRewardRate(aNewRewardRate);
 
         await expect(setRewardRateTxPromise)
@@ -114,7 +115,8 @@ describe("StakingContract", function () {
     })
 
     it("Should not allow for non-owner to change the stakeWithdrawalTimeout", async () => {
-        const aNewstakeWithdrawalTimeout = 50;
+        const aNewstakeWithdrawalTimeout: number = 50;
+
         const setStakeWithdrawalTimeoutTxPromise: Promise<any> =
             stakingContract.connect(bob).setStakeWithdrawalTimeout(aNewstakeWithdrawalTimeout);
 
@@ -123,29 +125,29 @@ describe("StakingContract", function () {
     })
 
     it("Should allow for the owner to change the rewardPercentage", async () => {
-         const aNewRewardPercentage = 50;
+         const aNewRewardPercentage: number = 50;
 
          await stakingContract.setRewardPercentage(aNewRewardPercentage);
 
-         const rewardPercentage = await stakingContract.rewardPercentage();
+         const rewardPercentage: number = await stakingContract.rewardPercentage();
          expect(aNewRewardPercentage).to.equal(rewardPercentage);
      })
 
     it("Should allow for the owner to change the rewardPeriod", async () => {
-        const aNewRewardRate = 50;
+        const aNewRewardRate: number = 50;
 
         await stakingContract.setRewardRate(aNewRewardRate);
 
-        const rewardPeriod = await stakingContract.rewardPeriod();
+        const rewardPeriod: BigNumber = await stakingContract.rewardPeriod();
         expect(aNewRewardRate).to.equal(rewardPeriod);
     })
 
     it("Should allow for the owner to change the stakeWithdrawalTimeout", async () => {
-        const aNewStakeWithdrawalTimeout = 50;
+        const aNewStakeWithdrawalTimeout: number = 50;
 
         await stakingContract.setStakeWithdrawalTimeout(aNewStakeWithdrawalTimeout);
 
-        const stakeWithdrawalTimeout = await stakingContract.stakeWithdrawalTimeout();
+        const stakeWithdrawalTimeout: BigNumber = await stakingContract.stakeWithdrawalTimeout();
         expect(aNewStakeWithdrawalTimeout).to.equal(stakeWithdrawalTimeout);
     })
 
@@ -178,33 +180,33 @@ describe("StakingContract", function () {
      })
 
     it("Should calculate the reward properly", async () => {
-        const tokensAtStake = 100;
+        const tokensToStake: number = 100;
         const aliceAddress: string = await alice.getAddress();
-        await stakingToken.approve(stakingContract.address, tokensAtStake);
-        await stakingContract.stake(tokensAtStake);
+        await stakingToken.approve(stakingContract.address, tokensToStake);
+        await stakingContract.stake(tokensToStake);
 
         await network.provider.send("evm_increaseTime", [rewardingPeriod])
 
-        const aliceRewardBalanceBeforeClaim = await rewardToken.balanceOf(aliceAddress);
+        const aliceRewardBalanceBeforeClaim: BigNumber = await rewardToken.balanceOf(aliceAddress);
         await stakingContract.claim();
-        const aliceRewardBalanceAfterClaim = await rewardToken.balanceOf(aliceAddress);
-        const expectedReward = tokensAtStake * rewardPercentage / 100;
+        const aliceRewardBalanceAfterClaim: BigNumber = await rewardToken.balanceOf(aliceAddress);
+        const expectedReward = tokensToStake * rewardPercentage / 100;
 
         expect(expectedReward).to.equal(aliceRewardBalanceAfterClaim.toNumber() - aliceRewardBalanceBeforeClaim.toNumber());
     })
 
     it("Should calculate the reward properly", async () => {
-        const tokensAtStake = 100;
+        const tokensToStake: number = 100;
         const aliceAddress: string = await alice.getAddress();
-        await stakingToken.approve(stakingContract.address, tokensAtStake);
-        await stakingContract.stake(tokensAtStake);
+        await stakingToken.approve(stakingContract.address, tokensToStake);
+        await stakingContract.stake(tokensToStake);
 
         await network.provider.send("evm_increaseTime", [rewardingPeriod])
 
-        const aliceRewardBalanceBeforeClaim = await rewardToken.balanceOf(aliceAddress);
+        const aliceRewardBalanceBeforeClaim: BigNumber = await rewardToken.balanceOf(aliceAddress);
         await stakingContract.claim();
-        const aliceRewardBalanceAfterClaim = await rewardToken.balanceOf(aliceAddress);
-        const expectedReward = tokensAtStake * rewardPercentage / 100;
+        const aliceRewardBalanceAfterClaim: BigNumber = await rewardToken.balanceOf(aliceAddress);
+        const expectedReward = tokensToStake * rewardPercentage / 100;
 
         expect(expectedReward).to.equal(aliceRewardBalanceAfterClaim.toNumber() - aliceRewardBalanceBeforeClaim.toNumber());
     })
@@ -218,13 +220,13 @@ describe("StakingContract", function () {
     })
 
     it("Should return the valid stake volume", async () => {
-        const tokensToStake = 100;
+        const tokensToStake: number = 100;
         const aliceStakeBefore: BigNumber = await stakingContract.totalStake();
         const aliceAddress: string = await alice.getAddress();
         await stakingToken.approve(stakingContract.address, tokensToStake);
         await stakingContract.stake(tokensToStake);
 
-        const aliceStakeAfter = await stakingContract.getStake(aliceAddress);
+        const aliceStakeAfter: BigNumber = await stakingContract.getStake(aliceAddress);
 
         expect(tokensToStake).to.equal(aliceStakeAfter.toNumber() - aliceStakeBefore.toNumber());
     })

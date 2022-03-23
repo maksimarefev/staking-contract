@@ -3,8 +3,7 @@ import "@nomiclabs/hardhat-ethers";
 import { task } from 'hardhat/config';
 import { Contract, ContractFactory, Event } from "ethers";
 
-//todo arefev: fix a description
-task("unstake", "Allows `spender` to withdraw from caller's account multiple times, up to the `tokens` amount.")
+task("unstake", "Transfers staked tokens if any to the `msg.sender` address")
     .addParam("contractAddress", "An address of a contract")
     .setAction(async function (taskArgs, hre) {
         const StakingContract: ContractFactory = await hre.ethers.getContractFactory("StakingContract");

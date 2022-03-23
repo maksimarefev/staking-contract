@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-//todo arefev: write the comments, use the /notice/ /param/ /return/ keywords
 contract StakingContract {
 
     IERC20 private _rewardToken;
@@ -66,6 +65,10 @@ contract StakingContract {
         _rewardToken = IERC20(rewardToken);
     }
 
+    /**
+     * @notice Transfers the 'amount' of tokens from 'msg.sender' address to the StakingContract address
+     * @param amount the amount of tokens to stake
+     */
     function stake(uint256 amount) external {
         _updateReward();
 
@@ -76,6 +79,9 @@ contract StakingContract {
         _stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
+    /**
+     * @notice Transfers the reward tokens if any to the `msg.sender` address
+     */
     function claim() external {
         _updateReward();
 
@@ -87,6 +93,9 @@ contract StakingContract {
         _rewardToken.transfer(msg.sender, reward);
     }
 
+    /**
+     * @notice Transfers staked tokens if any to the `msg.sender` address
+     */
     function unstake() external {
         require(stakes[msg.sender] > 0, "The caller has nothing at stake");
 
@@ -103,46 +112,88 @@ contract StakingContract {
         _stakingToken.transfer(msg.sender, amount);
     }
 
+
+    /**
+     * @notice Sets the reward percentage
+     * @param rewardPercentage is the reward percentage to be set
+     */
     function setRewardPercentage(uint8 rewardPercentage) public onlyOwner {
         require(rewardPercentage > 0, "Reward percentage can not be zero");
         require(rewardPercentage < 100, "Reward percentage can not exceed 100%");
         _rewardPercentage = rewardPercentage;
     }
 
+    /**
+     * @notice Sets the reward rate
+     * @param rewardRate is the reward rate to be set
+     */
     function setRewardRate(uint256 rewardRate) public onlyOwner {
         require(rewardRate > 0, "Reward rate can not be zero");
         _rewardPeriod = rewardRate;
     }
 
+    /**
+     * @notice Sets the stake withdrawal timeout
+     * @param stakeWithdrawalTimeout is the stake withdrawal timeout to be set
+     */
     function setStakeWithdrawalTimeout(uint256 stakeWithdrawalTimeout) public onlyOwner {
         _stakeWithdrawalTimeout = stakeWithdrawalTimeout;
     }
 
+    /**
+     * @notice Returns the total amount of staked tokens for the `stakeholder`
+     * @param stakeholder is the address of the stakeholder
+     * @return the total amount of staked tokens for the `stakeholder`
+     */
     function getStake(address stakeholder) public view returns (uint256) {
         return stakes[stakeholder];
     }
 
+    /**
+     * @notice Transfers ownership of the StakingContract to `to` address
+     * @param to is the address which should reciev an ownership
+     */
     function transferOwnership(address to) external onlyOwner {
         require(to != address(0), 'Transferring ownership to the zero address is not allowed');
         _owner = to;
     }
 
+    /**
+     * @notice Returns the total amount of staked tokens
+     * @return the total amount of staked tokens
+     */
     function totalStake() public view returns (uint256) {
         return _totalStake;
     }
 
+    /**
+     * @notice Returns the owner of StakingContract
+     * @return the owner of StakingContract
+     */
     function owner() public view returns (address) {
         return _owner;
     }
 
+    /**
+     * @notice Returns the reward percentage
+     * @return the reward percentage
+     */
     function rewardPercentage() public view returns(uint8) {
         return _rewardPercentage;
     }
 
+    /**
+     * @notice Returns the reward period
+     * @return the reward period
+     */
     function rewardPeriod() public view returns(uint256) {
         return _rewardPeriod;
     }
 
+    /**
+     * @notice Returns the stake withdrawal timeout
+     * @return the stake withdrawal timeout
+     */
     function stakeWithdrawalTimeout() public view returns(uint256) {
         return _stakeWithdrawalTimeout;
     }
