@@ -10,10 +10,9 @@ task("stake", "Transfers the `amount` of tokens from `msg.sender` address to the
         const StakingContract: ContractFactory = await hre.ethers.getContractFactory("StakingContract");
         const stakingContract: Contract = await StakingContract.attach(taskArgs.contractAddress);
 
-        const stakeTx = await stakingContract.approve(taskArgs.spender, taskArgs.tokens);
-        const stakeTxReceipt = await stakeTx.wait();
-        const transferEvent: Event = stakeTxReceipt.events[0];
+        const stakeTx: any = await stakingContract.stake(taskArgs.amount);
+        const stakeTxReceipt: any = await stakeTx.wait();
 
-        console.log("Successfully staked %d tokens from %s", transferEvent.args.tokens.toNumber(), transferEvent.args.from);
+        console.log("Successfully staked %d tokens from %s", taskArgs.amount, stakeTxReceipt.from);
         console.log("Gas used: %d", stakeTxReceipt.gasUsed.toNumber() * stakeTxReceipt.effectiveGasPrice.toNumber());
     });

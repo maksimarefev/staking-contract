@@ -19,7 +19,7 @@ In the root folder create *.env* file and fill it the following properties:<br/>
 2. From the root folder run ``` npx hardhat verify --network rinkeby [contract address] [arguments separated by space] ```
 
 ## How to run a task
-From the root folder run<br/>``` npx hardhat [task name] --network rinkeby --contract-address [contract address] --argument [argument value] ```<br/>Example:<br/>``` npx hardhat claim --network rinkeby --contract-address 0xdFFD4DEA4e382A7eA6a728b188DDDbF78DB76677 ```
+From the root folder run<br/>``` npx hardhat [task name] --network rinkeby --contract-address [contract address] --argument [argument value] ```<br/>Example:<br/>``` npx hardhat claim --network rinkeby --contract-address 0x5676B4052C04Aff5479d042C85a4cC38945Aba7C ```
 
 ## The list of available tasks
 | Task name | Description                                                                               | Options                                                                                        |
@@ -74,10 +74,14 @@ StakingContract
 * @types/chai#4.3.0
 * @types/mocha#9.1.0
 * @types/node#17.0.22
+* @typescript-eslint/eslint-plugin#5.16.0
+* @typescript-eslint/parser#5.16.0
 * chai#4.3.6
 * dotenv#16.0.0
+* eslint#8.11.0
 * ethereum-waffle#4.0.0-alpha.0
 * hardhat#2.9.1
+* solhint#3.3.7
 * solidity-coverage#0.7.20
 * ts-node#10.7.0
 * typechain#7.0.1
