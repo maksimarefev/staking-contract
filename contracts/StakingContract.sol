@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract StakingContract {
 
@@ -29,6 +29,9 @@ contract StakingContract {
      */
     mapping(address => uint256) private rewardUpdateDates;
 
+    /**
+     * @dev The reward percentage
+     */
     uint8 private _rewardPercentage;
 
     /**
@@ -46,20 +49,20 @@ contract StakingContract {
     address private _owner;
 
     modifier onlyOwner() {
-        require(msg.sender == _owner, 'Only the owner is allowed to perform this operation');
+        require(msg.sender == _owner, "Caller is not the owner");
         _;
     }
 
-    constructor(
+    constructor (
         address stakingToken,
         address rewardToken,
         uint8 rewardPercentage,
-        uint256 rewardRate,
+        uint256 rewardPeriod,
         uint256 stakeWithdrawalTimeout
-    ) {
+    ) public {
         _owner = msg.sender;
         setRewardPercentage(rewardPercentage);
-        setRewardRate(rewardRate);
+        setRewardPeriod(rewardPeriod);
         setStakeWithdrawalTimeout(stakeWithdrawalTimeout);
         _stakingToken = IERC20(stakingToken);
         _rewardToken = IERC20(rewardToken);
@@ -87,7 +90,7 @@ contract StakingContract {
 
         uint256 reward = rewards[msg.sender];
 
-        require(reward > 0, 'No reward for the caller');
+        require(reward > 0, "No reward for the caller");
 
         rewards[msg.sender] = 0;
         _rewardToken.transfer(msg.sender, reward);
@@ -100,10 +103,7 @@ contract StakingContract {
         require(stakes[msg.sender] > 0, "The caller has nothing at stake");
 
         uint256 lastStakeDate = lastStakeDates[msg.sender];
-        require(
-            block.timestamp - lastStakeDate >= _stakeWithdrawalTimeout,
-            "Stake withdrawal is not allowed due to an insufficient time passed since the last stake was made"
-        );
+        require(block.timestamp - lastStakeDate >= _stakeWithdrawalTimeout, "Timeout is not met");
 
         _updateReward();
         uint256 amount = stakes[msg.sender];
@@ -118,18 +118,18 @@ contract StakingContract {
      * @param rewardPercentage is the reward percentage to be set
      */
     function setRewardPercentage(uint8 rewardPercentage) public onlyOwner {
-        require(rewardPercentage > 0, "Reward percentage can not be zero");
-        require(rewardPercentage < 100, "Reward percentage can not exceed 100%");
+        require(rewardPercentage > 0, "Percentage can not be 0");
+        require(rewardPercentage < 100, "Percentage can not exceed 100%");
         _rewardPercentage = rewardPercentage;
     }
 
     /**
-     * @notice Sets the reward rate
-     * @param rewardRate is the reward rate to be set
+     * @notice Sets the reward period
+     * @param rewardPeriod is the reward period to be set
      */
-    function setRewardRate(uint256 rewardRate) public onlyOwner {
-        require(rewardRate > 0, "Reward rate can not be zero");
-        _rewardPeriod = rewardRate;
+    function setRewardPeriod(uint256 rewardPeriod) public onlyOwner {
+        require(rewardPeriod > 0, "Reward period can not be zero");
+        _rewardPeriod = rewardPeriod;
     }
 
     /**
@@ -154,7 +154,7 @@ contract StakingContract {
      * @param to is the address which should reciev an ownership
      */
     function transferOwnership(address to) external onlyOwner {
-        require(to != address(0), 'Transferring ownership to the zero address is not allowed');
+        require(to != address(0), "The zero address is not allowed");
         _owner = to;
     }
 
@@ -204,8 +204,8 @@ contract StakingContract {
             return;
         }
 
-        uint256 rewardingPeriods = (block.timestamp - rewardUpdateDates[msg.sender]) / _rewardPeriod;
-        uint256 reward = stakes[msg.sender] * rewardingPeriods * _rewardPercentage / 100;
+        uint256 rewardPeriods = (block.timestamp - rewardUpdateDates[msg.sender]) / _rewardPeriod;
+        uint256 reward = stakes[msg.sender] * rewardPeriods * _rewardPercentage / 100;
         rewards[msg.sender] += reward;
         rewardUpdateDates[msg.sender] = block.timestamp;
     }

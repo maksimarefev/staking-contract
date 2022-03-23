@@ -16,9 +16,15 @@
     "dotenv": "^16.0.0",
     "ethereum-waffle": "^4.0.0-alpha.0",
     "hardhat": "^2.9.1",
+    "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.20",
     "ts-node": "^10.7.0",
     "typechain": "^7.0.1",
     "typescript": "^4.6.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.16.0",
+    "@typescript-eslint/parser": "^5.16.0",
+    "eslint": "^8.11.0"
   }
 }

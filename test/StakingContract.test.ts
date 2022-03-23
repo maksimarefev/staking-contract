@@ -63,7 +63,7 @@ describe("StakingContract", function () {
         const unstakeTxPromise: Promise<any> = stakingContract.unstake();
 
         await expect(unstakeTxPromise)
-          .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Stake withdrawal is not allowed due to an insufficient time passed since the last stake was made'");
+          .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Timeout is not met'");
     })
 
     it("Should allow to unstake after the timeout has expired", async () => {
@@ -95,36 +95,36 @@ describe("StakingContract", function () {
           .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'No reward for the caller'");
     })
 
-     it("Should not allow for non-owner to change the rewardPercentage", async () => {
+     it("Should not allow for non-owner to change the reward percentage", async () => {
          const aNewRewardPercentage: number = 50;
 
          const setRewardPercentageTxPromise: Promise<any> =
             stakingContract.connect(bob).setRewardPercentage(aNewRewardPercentage);
 
          await expect(setRewardPercentageTxPromise)
-           .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Only the owner is allowed to perform this operation'");
+           .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Caller is not the owner'");
      })
 
-    it("Should not allow for non-owner to change the rewardRate", async () => {
-        const aNewRewardRate: number = 50;
+    it("Should not allow for non-owner to change the reward period", async () => {
+        const aNewRewardPeriod: number = 50;
 
-        const setRewardRateTxPromise: Promise<any> = stakingContract.connect(bob).setRewardRate(aNewRewardRate);
+        const setRewardPeriodTxPromise: Promise<any> = stakingContract.connect(bob).setRewardPeriod(aNewRewardPeriod);
 
-        await expect(setRewardRateTxPromise)
-            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Only the owner is allowed to perform this operation'");
+        await expect(setRewardPeriodTxPromise)
+            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Caller is not the owner'");
     })
 
-    it("Should not allow for non-owner to change the stakeWithdrawalTimeout", async () => {
+    it("Should not allow for non-owner to change the stake withdrawal timeout", async () => {
         const aNewstakeWithdrawalTimeout: number = 50;
 
         const setStakeWithdrawalTimeoutTxPromise: Promise<any> =
             stakingContract.connect(bob).setStakeWithdrawalTimeout(aNewstakeWithdrawalTimeout);
 
         await expect(setStakeWithdrawalTimeoutTxPromise)
-            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Only the owner is allowed to perform this operation'");
+            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Caller is not the owner'");
     })
 
-    it("Should allow for the owner to change the rewardPercentage", async () => {
+    it("Should allow for the owner to change the reward percentage", async () => {
          const aNewRewardPercentage: number = 50;
 
          await stakingContract.setRewardPercentage(aNewRewardPercentage);
@@ -133,16 +133,16 @@ describe("StakingContract", function () {
          expect(aNewRewardPercentage).to.equal(rewardPercentage);
      })
 
-    it("Should allow for the owner to change the rewardPeriod", async () => {
-        const aNewRewardRate: number = 50;
+    it("Should allow for the owner to change the reward period", async () => {
+        const aNewRewardPeriod: number = 50;
 
-        await stakingContract.setRewardRate(aNewRewardRate);
+        await stakingContract.setRewardPeriod(aNewRewardPeriod);
 
         const rewardPeriod: BigNumber = await stakingContract.rewardPeriod();
-        expect(aNewRewardRate).to.equal(rewardPeriod);
+        expect(aNewRewardPeriod).to.equal(rewardPeriod);
     })
 
-    it("Should allow for the owner to change the stakeWithdrawalTimeout", async () => {
+    it("Should allow for the owner to change the stake withdrawal timeout", async () => {
         const aNewStakeWithdrawalTimeout: number = 50;
 
         await stakingContract.setStakeWithdrawalTimeout(aNewStakeWithdrawalTimeout);
@@ -151,32 +151,32 @@ describe("StakingContract", function () {
         expect(aNewStakeWithdrawalTimeout).to.equal(stakeWithdrawalTimeout);
     })
 
-    it("Should not allow to set the rewardPercentage to zero", async () => {
+    it("Should not allow to set the reward percentage to zero", async () => {
         const aNewRewardPercentage = 0;
 
         const setRewardPercentageTxPromise: Promise<any> = stakingContract.setRewardPercentage(aNewRewardPercentage);
 
         await expect(setRewardPercentageTxPromise)
-            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Reward percentage can not be zero'");
+            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Percentage can not be 0'");
     })
 
-     it("Should not allow to set the rewardPercentage greater than 100", async () => {
+     it("Should not allow to set the reward percentage greater than 100", async () => {
         const aNewRewardPercentage = 101;
 
         const setRewardPercentageTxPromise: Promise<any> =
             stakingContract.setRewardPercentage(aNewRewardPercentage);
 
         await expect(setRewardPercentageTxPromise)
-            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Reward percentage can not exceed 100%'");
+            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Percentage can not exceed 100%'");
      })
 
-     it("Should not allow to set the rewardRate to zero", async () => {
-         const aNewRewardRate = 0;
+     it("Should not allow to set the reward period to zero", async () => {
+         const aNewRewardPeriod = 0;
 
-         const setRewardRateTxPromise: Promise<any> = stakingContract.setRewardRate(aNewRewardRate);
+         const setRewardPeriodTxPromise: Promise<any> = stakingContract.setRewardPeriod(aNewRewardPeriod);
 
-         await expect(setRewardRateTxPromise)
-            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Reward rate can not be zero'");
+         await expect(setRewardPeriodTxPromise)
+            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Reward period can not be zero'");
      })
 
     it("Should calculate the reward properly", async () => {
@@ -233,7 +233,7 @@ describe("StakingContract", function () {
 
     it("Should not allow to transfer ownership to the zero address", async () => {
         await expect(stakingContract.transferOwnership(ethers.constants.AddressZero))
-            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'Transferring ownership to the zero address is not allowed'");
+            .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'The zero address is not allowed'");
     })
 
     it("Should allow to transfer ownership to the valid address", async () => {
