@@ -35,31 +35,24 @@ describe("StakingContract", function () {
          await rewardToken.transfer(stakingContract.address, initialSupply);
     })
 
-    function assertTransferEvent(event: Event, from: string, to: string, value: number) {
-        expect("Transfer").to.equal(event.event);
-        expect(from).to.equal(event.args.from);
-        expect(to).to.equal(event.args.to);
-        expect(value).to.equal(event.args.tokens.toNumber());
-    }
-
     it("Should change total stake after staking", async () => {
         const tokensToStake: number = 100;
         const totalStakeBefore: BigNumber = await stakingContract.totalStake();
         const aliceAddress: string = await alice.getAddress();
+
         await stakingToken.approve(stakingContract.address, tokensToStake);
         await stakingContract.stake(tokensToStake);
 
         const totalStakeAfter: BigNumber = await stakingContract.totalStake();
-
         expect(tokensToStake).to.equal(totalStakeAfter.toNumber() - totalStakeBefore.toNumber());
     })
 
     it("Should not allow to unstake before the timeout has expired", async () => {
         const tokensToStake: number = 100;
         const aliceAddress: string = await alice.getAddress();
+
         await stakingToken.approve(stakingContract.address, tokensToStake);
         await stakingContract.stake(tokensToStake);
-
         const unstakeTxPromise: Promise<any> = stakingContract.unstake();
 
         await expect(unstakeTxPromise)
@@ -74,11 +67,11 @@ describe("StakingContract", function () {
 
         await network.provider.send("evm_increaseTime", [stakeWithdrawalTimeout])
 
-        const aliceBalanceBeforeUnstaking: BigNumber = await stakingToken.balanceOf(aliceAddress);
+        const aliceBalanceBeforeUnstake: BigNumber = await stakingToken.balanceOf(aliceAddress);
         await stakingContract.unstake();
-        const aliceBalanceAfterUnstaking: BigNumber = await stakingToken.balanceOf(aliceAddress);
+        const aliceBalanceAfterUnstake: BigNumber = await stakingToken.balanceOf(aliceAddress);
 
-        expect(tokensToStake).to.equal(aliceBalanceAfterUnstaking.toNumber() - aliceBalanceBeforeUnstaking.toNumber());
+        expect(tokensToStake).to.equal(aliceBalanceAfterUnstake.toNumber() - aliceBalanceBeforeUnstake.toNumber());
     })
 
     it("Should not allow to unstake if nothing at stake", async () => {
@@ -195,22 +188,6 @@ describe("StakingContract", function () {
         expect(expectedReward).to.equal(aliceRewardBalanceAfterClaim.toNumber() - aliceRewardBalanceBeforeClaim.toNumber());
     })
 
-    it("Should calculate the reward properly", async () => {
-        const tokensToStake: number = 100;
-        const aliceAddress: string = await alice.getAddress();
-        await stakingToken.approve(stakingContract.address, tokensToStake);
-        await stakingContract.stake(tokensToStake);
-
-        await network.provider.send("evm_increaseTime", [rewardingPeriod])
-
-        const aliceRewardBalanceBeforeClaim: BigNumber = await rewardToken.balanceOf(aliceAddress);
-        await stakingContract.claim();
-        const aliceRewardBalanceAfterClaim: BigNumber = await rewardToken.balanceOf(aliceAddress);
-        const expectedReward = tokensToStake * rewardPercentage / 100;
-
-        expect(expectedReward).to.equal(aliceRewardBalanceAfterClaim.toNumber() - aliceRewardBalanceBeforeClaim.toNumber());
-    })
-
     it("Should return the valid owner", async () => {
         const aliceAddress: string = await alice.getAddress();
 
@@ -221,8 +198,8 @@ describe("StakingContract", function () {
 
     it("Should return the valid stake volume", async () => {
         const tokensToStake: number = 100;
-        const aliceStakeBefore: BigNumber = await stakingContract.totalStake();
         const aliceAddress: string = await alice.getAddress();
+        const aliceStakeBefore: BigNumber = await stakingContract.getStake(aliceAddress);
         await stakingToken.approve(stakingContract.address, tokensToStake);
         await stakingContract.stake(tokensToStake);
 
@@ -232,7 +209,9 @@ describe("StakingContract", function () {
     })
 
     it("Should not allow to transfer ownership to the zero address", async () => {
-        await expect(stakingContract.transferOwnership(ethers.constants.AddressZero))
+        const transferOwnershipTxPromise: Promise<any> = stakingContract.transferOwnership(ethers.constants.AddressZero);
+
+        await expect(transferOwnershipTxPromise)
             .to.be.revertedWith("VM Exception while processing transaction: reverted with reason string 'The zero address is not allowed'");
     })
 

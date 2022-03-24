@@ -151,7 +151,7 @@ contract StakingContract {
 
     /**
      * @notice Transfers ownership of the StakingContract to `to` address
-     * @param to is the address which should reciev an ownership
+     * @param to is the address which should receive an ownership
      */
     function transferOwnership(address to) external onlyOwner {
         require(to != address(0), "The zero address is not allowed");
