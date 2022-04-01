@@ -15,7 +15,7 @@ describe("StakingContract", function () {
     let stakingToken: ERC20Mock;
     let stakingContract: StakingContract;
 
-    beforeEach(async function () {
+    beforeEach("Deploying contracts", async function () {
         [alice, bob] = await ethers.getSigners();
 
         const ERC20MockFactory: ERC20Mock__factory = (await ethers.getContractFactory("ERC20Mock")) as ERC20Mock__factory;

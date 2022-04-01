@@ -5,9 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract StakingContract {
 
-    IERC20 private _rewardToken;
+    IERC20 public rewardToken;
 
-    IERC20 private _stakingToken;
+    IERC20 public stakingToken;
 
     /**
      * @dev The stakes for each stakeholder.
@@ -32,40 +32,40 @@ contract StakingContract {
     /**
      * @dev The reward percentage
      */
-    uint8 private _rewardPercentage;
+    uint8 public rewardPercentage;
 
     /**
      * @dev The reward period in seconds
      */
-    uint256 private _rewardPeriod;
+    uint256 public rewardPeriod;
 
     /**
      * @dev The stake withdrawal timeout in seconds
      */
-    uint256 private _stakeWithdrawalTimeout;
+    uint256 public stakeWithdrawalTimeout;
 
-    uint256 private _totalStake;
+    uint256 public totalStake;
 
-    address private _owner;
+    address public owner;
 
     modifier onlyOwner() {
-        require(msg.sender == _owner, "Caller is not the owner");
+        require(msg.sender == owner, "Caller is not the owner");
         _;
     }
 
     constructor (
-        address stakingToken,
-        address rewardToken,
-        uint8 rewardPercentage,
-        uint256 rewardPeriod,
-        uint256 stakeWithdrawalTimeout
+        address _stakingToken,
+        address _rewardToken,
+        uint8 _rewardPercentage,
+        uint256 _rewardPeriod,
+        uint256 _stakeWithdrawalTimeout
     ) public {
-        _owner = msg.sender;
-        setRewardPercentage(rewardPercentage);
-        setRewardPeriod(rewardPeriod);
-        setStakeWithdrawalTimeout(stakeWithdrawalTimeout);
-        _stakingToken = IERC20(stakingToken);
-        _rewardToken = IERC20(rewardToken);
+        owner = msg.sender;
+        setRewardPercentage(_rewardPercentage);
+        setRewardPeriod(_rewardPeriod);
+        setStakeWithdrawalTimeout(_stakeWithdrawalTimeout);
+        stakingToken = IERC20(_stakingToken);
+        rewardToken = IERC20(_rewardToken);
     }
 
     /**
@@ -76,10 +76,10 @@ contract StakingContract {
         _updateReward();
 
         stakes[msg.sender] += amount;
-        _totalStake += amount;
+        totalStake += amount;
 
         lastStakeDates[msg.sender] = block.timestamp;
-        _stakingToken.transferFrom(msg.sender, address(this), amount);
+        stakingToken.transferFrom(msg.sender, address(this), amount);
     }
 
     /**
@@ -93,7 +93,7 @@ contract StakingContract {
         require(reward > 0, "No reward for the caller");
 
         rewards[msg.sender] = 0;
-        _rewardToken.transfer(msg.sender, reward);
+        rewardToken.transfer(msg.sender, reward);
     }
 
     /**
@@ -103,41 +103,41 @@ contract StakingContract {
         require(stakes[msg.sender] > 0, "The caller has nothing at stake");
 
         uint256 lastStakeDate = lastStakeDates[msg.sender];
-        require(block.timestamp - lastStakeDate >= _stakeWithdrawalTimeout, "Timeout is not met");
+        require(block.timestamp - lastStakeDate >= stakeWithdrawalTimeout, "Timeout is not met");
 
         _updateReward();
         uint256 amount = stakes[msg.sender];
         stakes[msg.sender] = 0;
-        _totalStake -= amount;
-        _stakingToken.transfer(msg.sender, amount);
+        totalStake -= amount;
+        stakingToken.transfer(msg.sender, amount);
     }
 
 
     /**
      * @notice Sets the reward percentage
-     * @param rewardPercentage is the reward percentage to be set
+     * @param _rewardPercentage is the reward percentage to be set
      */
-    function setRewardPercentage(uint8 rewardPercentage) public onlyOwner {
-        require(rewardPercentage > 0, "Percentage can not be 0");
-        require(rewardPercentage < 100, "Percentage can not exceed 100%");
-        _rewardPercentage = rewardPercentage;
+    function setRewardPercentage(uint8 _rewardPercentage) public onlyOwner {
+        require(_rewardPercentage > 0, "Percentage can not be 0");
+        require(_rewardPercentage < 100, "Percentage can not exceed 100%");
+        rewardPercentage = _rewardPercentage;
     }
 
     /**
      * @notice Sets the reward period
-     * @param rewardPeriod is the reward period to be set
+     * @param _rewardPeriod is the reward period to be set
      */
-    function setRewardPeriod(uint256 rewardPeriod) public onlyOwner {
-        require(rewardPeriod > 0, "Reward period can not be zero");
-        _rewardPeriod = rewardPeriod;
+    function setRewardPeriod(uint256 _rewardPeriod) public onlyOwner {
+        require(_rewardPeriod > 0, "Reward period can not be zero");
+        rewardPeriod = _rewardPeriod;
     }
 
     /**
      * @notice Sets the stake withdrawal timeout
-     * @param stakeWithdrawalTimeout is the stake withdrawal timeout to be set
+     * @param _stakeWithdrawalTimeout is the stake withdrawal timeout to be set
      */
-    function setStakeWithdrawalTimeout(uint256 stakeWithdrawalTimeout) public onlyOwner {
-        _stakeWithdrawalTimeout = stakeWithdrawalTimeout;
+    function setStakeWithdrawalTimeout(uint256 _stakeWithdrawalTimeout) public onlyOwner {
+        stakeWithdrawalTimeout = _stakeWithdrawalTimeout;
     }
 
     /**
@@ -155,47 +155,7 @@ contract StakingContract {
      */
     function transferOwnership(address to) external onlyOwner {
         require(to != address(0), "The zero address is not allowed");
-        _owner = to;
-    }
-
-    /**
-     * @notice Returns the total amount of staked tokens
-     * @return the total amount of staked tokens
-     */
-    function totalStake() public view returns (uint256) {
-        return _totalStake;
-    }
-
-    /**
-     * @notice Returns the owner of StakingContract
-     * @return the owner of StakingContract
-     */
-    function owner() public view returns (address) {
-        return _owner;
-    }
-
-    /**
-     * @notice Returns the reward percentage
-     * @return the reward percentage
-     */
-    function rewardPercentage() public view returns(uint8) {
-        return _rewardPercentage;
-    }
-
-    /**
-     * @notice Returns the reward period
-     * @return the reward period
-     */
-    function rewardPeriod() public view returns(uint256) {
-        return _rewardPeriod;
-    }
-
-    /**
-     * @notice Returns the stake withdrawal timeout
-     * @return the stake withdrawal timeout
-     */
-    function stakeWithdrawalTimeout() public view returns(uint256) {
-        return _stakeWithdrawalTimeout;
+        owner = to;
     }
 
     function _updateReward() internal {
@@ -204,8 +164,8 @@ contract StakingContract {
             return;
         }
 
-        uint256 rewardPeriods = (block.timestamp - rewardUpdateDates[msg.sender]) / _rewardPeriod;
-        uint256 reward = stakes[msg.sender] * rewardPeriods * _rewardPercentage / 100;
+        uint256 rewardPeriods = (block.timestamp - rewardUpdateDates[msg.sender]) / rewardPeriod;
+        uint256 reward = stakes[msg.sender] * rewardPeriods * rewardPercentage / 100;
         rewards[msg.sender] += reward;
         rewardUpdateDates[msg.sender] = block.timestamp;
     }
