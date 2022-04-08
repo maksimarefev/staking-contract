@@ -79,7 +79,7 @@ contract StakingContract {
         totalStake += amount;
 
         lastStakeDates[msg.sender] = block.timestamp;
-        stakingToken.transferFrom(msg.sender, address(this), amount);
+        require(stakingToken.transferFrom(msg.sender, address(this), amount), "Reward token transfer failed");
     }
 
     /**
@@ -93,7 +93,7 @@ contract StakingContract {
         require(reward > 0, "No reward for the caller");
 
         rewards[msg.sender] = 0;
-        rewardToken.transfer(msg.sender, reward);
+        require(rewardToken.transfer(msg.sender, reward), "Reward token transfer failed");
     }
 
     /**
@@ -109,7 +109,7 @@ contract StakingContract {
         uint256 amount = stakes[msg.sender];
         stakes[msg.sender] = 0;
         totalStake -= amount;
-        stakingToken.transfer(msg.sender, amount);
+        require(stakingToken.transfer(msg.sender, amount), "Staking token transfer failed");
     }
 
 
